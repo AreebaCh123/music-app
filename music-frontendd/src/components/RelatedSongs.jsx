@@ -3,13 +3,13 @@ import api from "../axios";
 import { FaLink } from "react-icons/fa";
 
 const RelatedSongs = () => {
-  const [songId, setSongId] = useState("");
+  const [songName, setSongName] = useState("");
   const [relatedSongs, setRelatedSongs] = useState([]);
 
   const fetchRelatedSongs = async () => {
-    if (!songId) return;
+    if (!songName) return;
     try {
-      const response = await api.get(`/related-songs/${songId}/`);
+      const response = await api.post("/related-songs/", { song_name: songName });
       setRelatedSongs(response.data.related_songs);
     } catch (error) {
       console.error("Error fetching related songs:", error);
@@ -22,9 +22,9 @@ const RelatedSongs = () => {
       <div style={{ display: 'flex', marginBottom: '1rem', gap: '0.5rem' }}>
         <input
           type="text"
-          placeholder="Enter Song ID"
-          value={songId}
-          onChange={(e) => setSongId(e.target.value)}
+          placeholder="Enter Song Name"
+          value={songName}
+          onChange={(e) => setSongName(e.target.value)}
           style={{ flex: 1, padding: '0.5rem', borderRadius: '6px', border: 'none', backgroundColor: '#282828', color: '#fff' }}
         />
         <button

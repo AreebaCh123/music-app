@@ -71,7 +71,6 @@ def recent(request, user_id):
             songs.append(json.loads(cached))
             continue
 
-        # Fallback to MongoDB
         try:
             doc = songs_collection.find_one({"_id": ObjectId(sid)})
         except:

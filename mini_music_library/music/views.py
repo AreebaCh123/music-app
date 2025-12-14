@@ -131,9 +131,20 @@ def upload_song(request):
 # ---------------------------------------------------
 #  RELATED SONGS API (Neo4j)
 # ---------------------------------------------------
-@api_view(["GET"])
-def related_songs(request, song_id):
-    # Step 1: Query Neo4j
+@api_view(["POST"])
+def related_songs(request):
+    song_name = request.data.get("song_name", "").strip()
+    if not song_name:
+        return Response({"error": "Song name is required"}, status=400)
+
+    # Find song in MongoDB
+    song = songs_collection.find_one({"title": song_name})
+    if not song:
+        return Response({"error": "Song not found"}, status=404)
+
+    song_id = str(song["_id"])
+
+    # Query Neo4j for related songs
     try:
         with get_session() as session:
             result = session.run("""
@@ -145,14 +156,13 @@ def related_songs(request, song_id):
     except Exception as e:
         return Response({"error": "Neo4j query failed", "details": str(e)}, status=500)
 
-    # Step 2: Fetch metadata from MongoDB
+    # Fetch related song metadata from MongoDB
     related_songs = []
     for rid in related_ids:
         try:
             doc = songs_collection.find_one({"_id": ObjectId(rid)})
         except:
             doc = songs_collection.find_one({"_id": rid})
-
         if doc:
             doc["_id"] = str(doc["_id"])
             related_songs.append(doc)
